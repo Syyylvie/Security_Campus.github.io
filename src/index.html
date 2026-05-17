@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEC-KV风险评估系统 - 中小学上下学时段安全风险评估</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', 'SimHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            padding: 30px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            padding: 25px;
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .section:hover {
+            border-color: #667eea;
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.2);
+        }
+
+        .section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+            font-size: 1.5em;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        select, input[type="range"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.3);
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .slider-container input[type="range"] {
+            flex: 1;
+        }
+
+        .slider-value {
+            min-width: 50px;
+            padding: 8px 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 20px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .weight-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            background: #f0f0f0;
+            border-radius: 15px;
+            font-size: 0.9em;
+            color: #666;
+            margin-left: 10px;
+        }
+
+        .calculate-btn {
+            width: 100%;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 1.5em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .calculate-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.5);
+        }
+
+        .calculate-btn:active {
+            transform: translateY(0);
+        }
+
+        .result-section {
+            display: none;
+            margin-top: 30px;
+            padding: 30px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 15px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .risk-value {
+            font-size: 4em;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .risk-level {
+            display: inline-block;
+            padding: 10px 30px;
+            border-radius: 25px;
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-top: 15px;
+        }
+
+        .risk-level.level1 {
+            background: linear-gradient(135deg, #ff4757 0%, #ff6b81 100%);
+            color: white;
+        }
+
+        .risk-level.level2 {
+            background: linear-gradient(135deg, #ffa502 0%, #ffbe76 100%);
+            color: white;
+        }
+
+        .risk-level.level3 {
+            background: linear-gradient(135deg, #3742fa 0%, #5352ed 100%);
+            color: white;
+        }
+
+        .risk-level.level4 {
+            background: linear-gradient(135deg, #2ed573 0%, #7bed9f 100%);
+            color: white;
+        }
+
+        .risk-level.level5 {
+            background: linear-gradient(135deg, #1e90ff 0%, #70a1ff 100%);
+            color: white;
+        }
+
+        .result-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .result-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .result-card h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+            font-size: 1.3em;
+        }
+
+        .result-card p, .result-card li {
+            line-height: 1.8;
+            color: #555;
+            font-size: 1em;
+        }
+
+        .result-card ul {
+            padding-left: 20px;
+        }
+
+        .result-card li {
+            margin-bottom: 8px;
+        }
+
+        .params-display {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .param-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .param-item:last-child {
+            border-bottom: none;
+        }
+
+        .param-label {
+            font-weight: bold;
+            color: #666;
+        }
+
+        .param-value {
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .formula-display {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 1.2em;
+            margin-top: 20px;
+        }
+
+        .formula-display span {
+            font-weight: bold;
+            font-size: 1.3em;
+        }
+
+        @media (max-width: 768px) {
+            .result-details {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .risk-value {
+                font-size: 3em;
+            }
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #999;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>LEC-KV风险评估系统</h1>
+            <p>基于LEC-KV模型的中小学上下学时段安全风险评估</p>
+        </div>
+
+        <div class="main-content">
+            <div class="section">
+                <h2>📋 基本信息</h2>
+                <div class="form-group">
+                    <label>主风险类型</label>
+                    <select id="mainRiskType">
+                        <option value="人身安全风险">人身安全风险</option>
+                        <option value="秩序安全风险">秩序安全风险</option>
+                        <option value="物理入侵风险">物理入侵风险</option>
+                        <option value="技术安防失效风险">技术安防失效风险</option>
+                        <option value="管理与应急失效风险">管理与应急失效风险</option>
+                        <option value="规划与环境风险">规划与环境风险</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>具体风险类型</label>
+                    <select id="subRiskType">
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>时间段</label>
+                    <select id="timePeriod">
+                        <option value="早高峰">早高峰 (修正系数 1.8)</option>
+                        <option value="晚高峰">晚高峰 (修正系数 1.5)</option>
+                        <option value="常规时段">常规时段 (修正系数 1.0)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>天气条件</label>
+                    <select id="weather">
+                        <option value="晴天">晴天 (修正系数 1.0)</option>
+                        <option value="暴雨">暴雨/大雪/雾霾 (修正系数 1.5)</option>
+                        <option value="阴天">阴天/大风 (修正系数 1.3)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>⚙️ 风险参数（默认）</h2>
+                <div class="params-display">
+                    <div class="param-item">
+                        <span class="param-label">事故发生的可能性 (L)</span>
+                        <span class="param-value" id="LValue">6</span>
+                    </div>
+                    <div class="param-item">
+                        <span class="param-label">人员暴露于危险环境的频率 (E)</span>
+                        <span class="param-value" id="EValue">6</span>
+                    </div>
+                    <div class="param-item">
+                        <span class="param-label">事故后果的严重程度 (C)</span>
+                        <span class="param-value" id="CValue">7</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>🛡️ 防护措施完备度评估</h2>
+                <p style="color: #666; margin-bottom: 20px;">分值越高，防护措施越完善，防护效果越强</p>
+
+                <div class="form-group">
+                    <label>
+                        电子围栏
+                        <span class="weight-badge">权重: 0.30</span>
+                    </label>
+                    <div class="slider-container">
+                        <input type="range" id="fenceScore" min="0" max="10" value="5" step="1">
+                        <span class="slider-value" id="fenceValue">5</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        保安巡逻
+                        <span class="weight-badge">权重: 0.20</span>
+                    </label>
+                    <div class="slider-container">
+                        <input type="range" id="securityScore" min="0" max="10" value="5" step="1">
+                        <span class="slider-value" id="securityValue">5</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        监控
+                        <span class="weight-badge">权重: 0.25</span>
+                    </label>
+                    <div class="slider-container">
+                        <input type="range" id="cameraScore" min="0" max="10" value="5" step="1">
+                        <span class="slider-value" id="cameraValue">5</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        门禁
+                        <span class="weight-badge">权重: 0.25</span>
+                    </label>
+                    <div class="slider-container">
+                        <input type="range" id="accessScore" min="0" max="10" value="5" step="1">
+                        <span class="slider-value" id="accessValue">5</span>
+                    </div>
+                </div>
+            </div>
+
+            <button class="calculate-btn" onclick="calculateRisk()">
+                开始评估
+            </button>
+
+            <div class="result-section" id="resultSection">
+                <div class="result-header">
+                    <div class="risk-value" id="riskValue">0.0000</div>
+                    <div class="risk-level" id="riskLevel">请评估</div>
+                    <div class="formula-display">
+                        公式: <span>D = L × E × C × K × V</span>
+                    </div>
+                </div>
+
+                <div class="result-details">
+                    <div class="result-card">
+                        <h3>📝 风险规避建议</h3>
+                        <ul id="suggestions"></ul>
+                    </div>
+
+                    <div class="result-card">
+                        <h3>🚨 应对措施</h3>
+                        <ul id="measures"></ul>
+                    </div>
+
+                    <div class="result-card" style="grid-column: 1 / -1;">
+                        <h3>📊 计算参数详情</h3>
+                        <div class="params-display" id="calcDetails"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>LEC-KV风险评估系统 | 深圳市为民学校上下学时段安全风险评估工具</p>
+        </div>
+    </div>
+
+    <script>
+        const riskTypes = {
+            "人身安全风险": [
+                "暴力侵害伤人（1）",
+                "交通冲撞伤人（2）",
+                "拥挤踩踏伤人（3）",
+                "寻衅滋事骚扰（4）",
+                "学生追逐打闹致伤（5）",
+                "精神障碍人员袭击（6）",
+                "校外人员尾随骚扰（7）",
+                "设施坠落伤人（8）",
+                "地面湿滑致伤（9）",
+                "突发疾病处置不当（10）"
+            ],
+            "秩序安全风险": [
+                "校门聚集拥堵（11）",
+                "家长争执冲突扰序（12）",
+                "违规占道经营扰序（13）",
+                "外部人员滋事扰序（14）",
+                "学生无序穿行（15）",
+                "车辆乱停乱放（16）",
+                "非接送车辆违规通行（17）",
+                "外卖/快递车辆穿行（18）",
+                "学生聚集打闘（19）",
+                "信息引导缺失（20）"
+            ],
+            "物理入侵风险": [
+                "翻越周界围栏闯入（21）",
+                "伪装尾随入校（22）",
+                "暴力冲撞校门/通道（23）",
+                "破坏安防设施闯入（24）",
+                "重点区域非法侵入（25）",
+                "翻越等候区隔离设施（26）",
+                "强行闯入校园（27）",
+                "破坏门窗进入（28）",
+                "攀爬建筑物进入（29）",
+                "藏匿于接送车辆混入（30）"
+            ],
+            "技术安防失效风险": [
+                "视频监控盲区漏判（31）",
+                "门禁/出入口控制系统失效（32）",
+                "紧急报警装置失灵（33）",
+                "广播/对讲系统失效（34）",
+                "电子巡更缺位（35）",
+                "安检设备故障（36）",
+                "入侵报警系统误报/漏报（37）",
+                "监控存储失效（38）",
+                "安防平台故障（39）",
+                "设备断电失效（40）"
+            ],
+            "管理与应急失效风险": [
+                "护学岗值守脱岗/缺位（41）",
+                "安保人员应急处置能力不足（42）",
+                "安防制度执行不到位（43）",
+                "应急预案不完善（44）",
+                "安防设备维护缺失（45）",
+                "未定期开展应急演练（46）",
+                "安保人员培训不足（47）",
+                "访客登记制度执行不严（48）",
+                "隐患排查流于形式（49）",
+                "家校联动机制失效（50）"
+            ],
+            "规划与环境风险": [
+                "建筑布局不合理易拥堵（51）",
+                "人车流动线交叉冲突（52）",
+                "学生等候区空间不足（53）",
+                "周界防护设施破损/缺失（54）",
+                "周边交通设施不完善（55）",
+                "校门出口紧邻主干道（56）",
+                "等候区无遮阳/避雨设施（57）",
+                "周边施工影响通行（58）",
+                "路口无减速/警示标识（59）",
+                "周边照明不足（60）"
+            ]
+        };
+
+        const riskDefaults = {
+            "暴力侵害伤人（1）": {"L": 1, "E": 1, "C": 40},
+            "交通冲撞伤人（2）": {"L": 6, "E": 6, "C": 7},
+            "拥挤踩踏伤人（3）": {"L": 6, "E": 6, "C": 40},
+            "寻衅滋事骚扰（4）": {"L": 3, "E": 3, "C": 7},
+            "学生追逐打闹致伤（5）": {"L": 6, "E": 6, "C": 7},
+            "精神障碍人员袭击（6）": {"L": 1, "E": 1, "C": 40},
+            "校外人员尾随骚扰（7）": {"L": 3, "E": 3, "C": 15},
+            "设施坠落伤人（8）": {"L": 3, "E": 3, "C": 7},
+            "地面湿滑致伤（9）": {"L": 3, "E": 6, "C": 7},
+            "突发疾病处置不当（10）": {"L": 3, "E": 1, "C": 15},
+            "校门聚集拥堵（11）": {"L": 6, "E": 6, "C": 40},
+            "家长争执冲突扰序（12）": {"L": 6, "E": 6, "C": 15},
+            "违规占道经营扰序（13）": {"L": 3, "E": 3, "C": 7},
+            "外部人员滋事扰序（14）": {"L": 3, "E": 3, "C": 15},
+            "学生无序穿行（15）": {"L": 6, "E": 6, "C": 7},
+            "车辆乱停乱放（16）": {"L": 6, "E": 6, "C": 7},
+            "非接送车辆违规通行（17）": {"L": 6, "E": 3, "C": 7},
+            "外卖/快递车辆穿行（18）": {"L": 3, "E": 3, "C": 3},
+            "学生聚集打闘（19）": {"L": 6, "E": 6, "C": 7},
+            "信息引导缺失（20）": {"L": 3, "E": 6, "C": 3},
+            "翻越周界围栏闯入（21）": {"L": 3, "E": 3, "C": 15},
+            "伪装尾随入校（22）": {"L": 3, "E": 6, "C": 15},
+            "暴力冲撞校门/通道（23）": {"L": 1, "E": 1, "C": 40},
+            "破坏安防设施闯入（24）": {"L": 1, "E": 1, "C": 40},
+            "重点区域非法侵入（25）": {"L": 3, "E": 3, "C": 15},
+            "翻越等候区隔离设施（26）": {"L": 3, "E": 6, "C": 7},
+            "强行闯入校园（27）": {"L": 1, "E": 1, "C": 40},
+            "破坏门窗进入（28）": {"L": 1, "E": 1, "C": 40},
+            "攀爬建筑物进入（29）": {"L": 1, "E": 1, "C": 40},
+            "藏匿于接送车辆混入（30）": {"L": 3, "E": 3, "C": 15},
+            "视频监控盲区漏判（31）": {"L": 3, "E": 6, "C": 7},
+            "门禁/出入口控制系统失效（32）": {"L": 3, "E": 6, "C": 15},
+            "紧急报警装置失灵（33）": {"L": 3, "E": 6, "C": 15},
+            "广播/对讲系统失效（34）": {"L": 3, "E": 6, "C": 7},
+            "电子巡更缺位（35）": {"L": 3, "E": 3, "C": 7},
+            "安检设备故障（36）": {"L": 3, "E": 3, "C": 7},
+            "入侵报警系统误报/漏报（37）": {"L": 3, "E": 3, "C": 7},
+            "监控存储失效（38）": {"L": 3, "E": 3, "C": 3},
+            "安防平台故障（39）": {"L": 3, "E": 3, "C": 7},
+            "设备断电失效（40）": {"L": 1, "E": 3, "C": 7},
+            "护学岗值守脱岗/缺位（41）": {"L": 3, "E": 6, "C": 15},
+            "安保人员应急处置能力不足（42）": {"L": 3, "E": 6, "C": 15},
+            "安防制度执行不到位（43）": {"L": 3, "E": 6, "C": 7},
+            "应急预案不完善（44）": {"L": 3, "E": 3, "C": 15},
+            "安防设备维护缺失（45）": {"L": 3, "E": 3, "C": 7},
+            "未定期开展应急演练（46）": {"L": 3, "E": 3, "C": 15},
+            "安保人员培训不足（47）": {"L": 3, "E": 3, "C": 15},
+            "访客登记制度执行不严（48）": {"L": 3, "E": 6, "C": 15},
+            "隐患排查流于形式（49）": {"L": 3, "E": 3, "C": 7},
+            "家校联动机制失效（50）": {"L": 3, "E": 3, "C": 7},
+            "建筑布局不合理易拥堵（51）": {"L": 6, "E": 6, "C": 40},
+            "人车流动线交叉冲突（52）": {"L": 6, "E": 6, "C": 7},
+            "学生等候区空间不足（53）": {"L": 6, "E": 6, "C": 40},
+            "周界防护设施破损/缺失（54）": {"L": 3, "E": 6, "C": 7},
+            "周边交通设施不完善（55）": {"L": 3, "E": 6, "C": 7},
+            "校门出口紧邻主干道（56）": {"L": 6, "E": 6, "C": 7},
+            "等候区无遮阳/避雨设施（57）": {"L": 3, "E": 6, "C": 3},
+            "周边施工影响通行（58）": {"L": 3, "E": 3, "C": 7},
+            "路口无减速/警示标识（59）": {"L": 3, "E": 6, "C": 7},
+            "周边照明不足（60）": {"L": 1, "E": 6, "C": 3}
+        };
+
+        const suggestions = {
+            "拥挤踩踏伤人（3）": [
+                "上下学时段实行错峰放学制度，分年级、分班级有序疏导",
+                "在校门及等候区增设硬质隔离设施，划分单向通行通道",
+                "安排安保人员、教师、家长志愿者现场引导",
+                "严禁学生追逐打闹、人员无序聚集",
+                "配备应急广播，及时疏导拥挤人群"
+            ],
+            "校门聚集拥堵（11）": [
+                "实行错峰放学制度，明确各班级接送区域与通行路线",
+                "增设硬质隔离设施，划分单向通行通道",
+                "安排安保人员、教师、家长志愿者现场引导",
+                "严禁人员无序聚集，配备应急广播及时疏导"
+            ],
+            "建筑布局不合理易拥堵（51）": [
+                "优化校园建筑布局，拓宽校门通行通道",
+                "重新规划学生等候区域，增设临时等候空间",
+                "合理划分人车通行区域，实现人车物理分流",
+                "在等候区设置警示标识，明确人员站立边界"
+            ],
+            "学生等候区空间不足（53）": [
+                "重新规划学生等候区域，增设临时等候空间",
+                "设置明确的等候区边界和站立标识",
+                "优化等候区布局，提高空间利用率",
+                "在高峰时段安排专人引导分流"
+            ],
+            "交通冲撞伤人（2）": [
+                "在校门周边设置减速带、警示标识",
+                "安排专人引导接送车辆有序停放",
+                "严禁车辆乱停乱放、违规通行",
+                "划分接送车辆专用区域，禁止非接送车辆进入核心区域",
+                "加强对家长的交通安全宣传"
+            ],
+            "学生追逐打闹致伤（5）": [
+                "严禁学生在校门及等候区域追逐打闹",
+                "安排教师和安保人员现场值守",
+                "设置警示标识，明确禁止行为",
+                "开展安全教育，提升学生安全意识"
+            ],
+            "学生无序穿行（15）": [
+                "划分明确的人行通道和站立区域",
+                "安排专人引导学生安全通行",
+                "设置醒目的人行横道和指示标识",
+                "加强交通安全教育，引导学生遵守规则"
+            ],
+            "车辆乱停乱放（16）": [
+                "划分接送车辆专用停车区域",
+                "安排专人引导车辆有序停放",
+                "联合交警部门加强执法力度",
+                "加强对家长的宣传，规范停车行为"
+            ],
+            "学生聚集打闹（19）": [
+                "严禁学生在等候区聚集打闹",
+                "安排教师和安保人员现场值守",
+                "设置警示标识，加强安全教育",
+                "制定奖惩措施，制止违规行为"
+            ],
+            "家长争执冲突扰序（12）": [
+                "设置家长等候区，划分明确的接送位置",
+                "安排安保人员和志愿者维护秩序",
+                "通过家校群发布文明接送倡议",
+                "建立矛盾调解机制，及时化解纠纷"
+            ],
+            "人车流动线交叉冲突（52）": [
+                "实现人车物理分流，设置独立人行道",
+                "优化校门周边交通组织，明确通行路线",
+                "设置交通疏导员，引导人车有序通行",
+                "加强交通管控，限制车辆在高峰时段进入"
+            ],
+            "校门出口紧邻主干道（56）": [
+                "联系交管部门设置限速、警示标识",
+                "设置过街天桥或地下通道，实现人车分流",
+                "安排专人引导学生安全过马路",
+                "加强与交警的联动，强化交通管理"
+            ],
+            "伪装尾随入校（22）": [
+                "严格落实校门准入制度，加强身份核验",
+                "配备身份验证设备，杜绝无证人员入校",
+                "加强对安保人员的培训，提升识别能力",
+                "建立入校登记制度，确保信息可追溯"
+            ],
+            "门禁/出入口控制系统失效（32）": [
+                "定期对门禁设备进行检修维护",
+                "配备备用门禁设备，确保应急使用",
+                "加强安保人员应急开锁培训",
+                "建立设备检查台账，及时发现并处理故障"
+            ],
+            "紧急报警装置失灵（33）": [
+                "定期检查紧急报警装置，确保正常运行",
+                "配备备用报警设备，建立应急响应机制",
+                "加强安保人员培训，熟练掌握报警流程",
+                "与公安机关建立联动机制，实现快速响应"
+            ],
+            "护学岗值守脱岗/缺位（41）": [
+                "严格执行护学岗值守制度，确保在岗在位",
+                "建立护学岗巡查机制，定期检查在岗情况",
+                "加强护学岗人员培训，提升责任意识",
+                "建立奖惩机制，奖优罚劣"
+            ],
+            "安保人员应急处置能力不足（42）": [
+                "定期组织应急处置培训，提升专业能力",
+                "开展应急演练，检验和提高处置水平",
+                "配备必要的应急装备，确保处置效果",
+                "建立考核机制，促进能力提升"
+            ],
+            "访客登记制度执行不严（48）": [
+                "严格落实访客登记制度，认真核验身份",
+                "配备身份验证设备，提高登记效率",
+                "加强安保人员培训，增强责任意识",
+                "建立登记台账，确保信息可追溯"
+            ]
+        };
+
+        const measures = {
+            "一级 (极其危险)": [
+                "立即启动应急响应预案",
+                "组织人员疏散，避免拥挤和踩踏",
+                "联系警方和家长，稳定情绪",
+                "安排专人引导学生到安全区域",
+                "利用广播系统发布指令，维持秩序",
+                "及时向教育部门和相关部门报告情况"
+            ],
+            "二级 (高度危险)": [
+                "启动应急响应机制",
+                "组织人员有序疏散，避免拥挤",
+                "与相关方沟通，及时化解矛盾",
+                "安排教师和安保人员维护现场秩序",
+                "利用广播系统发布指令，引导人员流动",
+                "及时向教育部门和相关部门报告情况"
+            ],
+            "三级 (显著危险)": [
+                "制定详细的应急处置预案",
+                "定期组织应急演练，提高应急处置能力",
+                "加强学生和家长的安全教育",
+                "建立信息沟通机制，及时化解矛盾",
+                "优化校园空间布局，避免人员过度聚集",
+                "与家长委员会建立联系，共同维护校园秩序"
+            ],
+            "四级 (一般危险)": [
+                "开展安全教育，提高学生和家长的安全意识",
+                "定期组织应急演练，提高应急处置能力",
+                "建立信息沟通机制，及时了解和化解矛盾",
+                "优化校园空间布局，避免人员过度聚集",
+                "组织教师和安保人员开展日常巡查",
+                "与家长委员会保持联系，共同维护校园秩序"
+            ],
+            "五级 (稍有危险)": [
+                "开展安全教育，提高安全意识",
+                "定期组织应急演练",
+                "建立信息沟通机制",
+                "优化校园空间布局，避免人员过度聚集"
+            ]
+        };
+
+        function updateSubRiskTypes() {
+            const mainRisk = document.getElementById('mainRiskType').value;
+            const subRiskSelect = document.getElementById('subRiskType');
+            subRiskSelect.innerHTML = '';
+
+            const subRisks = riskTypes[mainRisk] || [];
+            subRisks.forEach(risk => {
+                const option = document.createElement('option');
+                option.value = risk;
+                option.textContent = risk;
+                subRiskSelect.appendChild(option);
+            });
+
+            updateDefaultValues();
+        }
+
+        function updateDefaultValues() {
+            const subRisk = document.getElementById('subRiskType').value;
+            if (subRisk && riskDefaults[subRisk]) {
+                const defaults = riskDefaults[subRisk];
+                document.getElementById('LValue').textContent = defaults.L;
+                document.getElementById('EValue').textContent = defaults.E;
+                document.getElementById('CValue').textContent = defaults.C;
+            }
+        }
+
+        function setupSliders() {
+            const sliders = [
+                {id: 'fenceScore', valueId: 'fenceValue'},
+                {id: 'securityScore', valueId: 'securityValue'},
+                {id: 'cameraScore', valueId: 'cameraValue'},
+                {id: 'accessScore', valueId: 'accessValue'}
+            ];
+
+            sliders.forEach(slider => {
+                const sliderEl = document.getElementById(slider.id);
+                const valueEl = document.getElementById(slider.valueId);
+
+                sliderEl.addEventListener('input', function() {
+                    valueEl.textContent = this.value;
+                });
+            });
+        }
+
+        function calculateRisk() {
+            const mainRiskType = document.getElementById('mainRiskType').value;
+            const subRiskType = document.getElementById('subRiskType').value;
+            const timePeriod = document.getElementById('timePeriod').value;
+            const weather = document.getElementById('weather').value;
+
+            const L = parseFloat(document.getElementById('LValue').textContent);
+            const E = parseFloat(document.getElementById('EValue').textContent);
+            const C = parseFloat(document.getElementById('CValue').textContent);
+
+            const fenceScore = parseFloat(document.getElementById('fenceScore').value);
+            const securityScore = parseFloat(document.getElementById('securityScore').value);
+            const cameraScore = parseFloat(document.getElementById('cameraScore').value);
+            const accessScore = parseFloat(document.getElementById('accessScore').value);
+
+            let Kt = 1.0;
+            if (timePeriod === '早高峰') Kt = 1.8;
+            else if (timePeriod === '晚高峰') Kt = 1.5;
+
+            let Kw = 1.0;
+            if (weather === '暴雨') Kw = 1.5;
+            else if (weather === '阴天') Kw = 1.3;
+
+            const K = Kt * Kw;
+
+            const weights = {
+                '电子围栏': 0.30,
+                '保安巡逻': 0.20,
+                '监控': 0.25,
+                '门禁': 0.25
+            };
+
+            const sum_WiSi = weights['电子围栏'] * fenceScore +
+                           weights['保安巡逻'] * securityScore +
+                           weights['监控'] * cameraScore +
+                           weights['门禁'] * accessScore;
+
+            const V = 1 / (1 + sum_WiSi);
+
+            const D = L * E * C * K * V;
+
+            let riskLevel = '五级 (稍有危险)';
+            let levelClass = 'level5';
+            if (D >= 320) {
+                riskLevel = '一级 (极其危险)';
+                levelClass = 'level1';
+            } else if (D >= 160) {
+                riskLevel = '二级 (高度危险)';
+                levelClass = 'level2';
+            } else if (D >= 70) {
+                riskLevel = '三级 (显著危险)';
+                levelClass = 'level3';
+            } else if (D >= 20) {
+                riskLevel = '四级 (一般危险)';
+                levelClass = 'level4';
+            }
+
+            document.getElementById('riskValue').textContent = D.toFixed(4);
+            const riskLevelEl = document.getElementById('riskLevel');
+            riskLevelEl.textContent = riskLevel;
+            riskLevelEl.className = 'risk-level ' + levelClass;
+
+            const suggestionsList = document.getElementById('suggestions');
+            suggestionsList.innerHTML = '';
+            if (suggestions[subRiskType]) {
+                suggestions[subRiskType].forEach(item => {
+                    const li = document.createElement('li');
+                    li.textContent = item;
+                    suggestionsList.appendChild(li);
+                });
+            } else {
+                const li = document.createElement('li');
+                li.textContent = '针对该风险类型，请参照相关风险等级的整体建议执行。';
+                suggestionsList.appendChild(li);
+            }
+
+            const measuresList = document.getElementById('measures');
+            measuresList.innerHTML = '';
+            const levelMeasures = measures[riskLevel] || measures['五级 (稍有危险)'];
+            levelMeasures.forEach(item => {
+                const li = document.createElement('li');
+                li.textContent = item;
+                measuresList.appendChild(li);
+            });
+
+            const calcDetails = document.getElementById('calcDetails');
+            calcDetails.innerHTML = `
+                <div class="param-item">
+                    <span class="param-label">事故发生的可能性 (L)</span>
+                    <span class="param-value">${L}</span>
+                </div>
+                <div class="param-item">
+                    <span class="param-label">人员暴露于危险环境的频率 (E)</span>
+                    <span class="param-value">${E}</span>
+                </div>
+                <div class="param-item">
+                    <span class="param-label">事故后果的严重程度 (C)</span>
+                    <span class="param-value">${C}</span>
+                </div>
+                <div class="param-item">
+                    <span class="param-label">时间修正系数 (Kt)</span>
+                    <span class="param-value">${Kt}</span>
+                </div>
+                <div class="param-item">
+                    <span class="param-label">天气修正系数 (Kw)</span>
+                    <span class="param-value">${Kw}</span>
+                </div>
+                <div class="param-item">
+                    <span class="param-label">时空修正系数 (K=Kt×Kw)</span>
+                    <span class="param-value">${K.toFixed(4)}</span>
+                </div>
+                <div class="param-item">
+                    <span class="param-label">防护措施效能因子 (V)</span>
+                    <span class="param-value">${V.toFixed(6)}</span>
+                </div>
+                <div class="param-item">
+                    <span class="param-label">风险值 (D=L×E×C×K×V)</span>
+                    <span class="param-value">${D.toFixed(4)}</span>
+                </div>
+            `;
+
+            document.getElementById('resultSection').style.display = 'block';
+            document.getElementById('resultSection').scrollIntoView({behavior: 'smooth'});
+        }
+
+        document.getElementById('mainRiskType').addEventListener('change', updateSubRiskTypes);
+        document.getElementById('subRiskType').addEventListener('change', updateDefaultValues);
+
+        updateSubRiskTypes();
+        setupSliders();
+    </script>
+</body>
+</html>
